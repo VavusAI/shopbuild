@@ -1,7 +1,6 @@
 // src/screens/ProductScreen.tsx
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
   ScrollView,
@@ -56,10 +55,9 @@ export default function ProductScreen() {
 
   const related: Product[] = useMemo(() => {
     if (!product) return PRODUCTS_MOCK.slice(0, 6);
-    const sameBrand = (list.length ? list : PRODUCTS_MOCK).filter(
-      p => p.id !== product.id && p.brand === product.brand
-    );
-    const pool = sameBrand.length ? sameBrand : (list.length ? list : PRODUCTS_MOCK);
+    const source = (list.length ? list : PRODUCTS_MOCK);
+    const sameBrand = source.filter(p => p.id !== product.id && p.brand === product.brand);
+    const pool = sameBrand.length ? sameBrand : source;
     return pool.slice(0, 10);
   }, [list, product]);
 
@@ -71,19 +69,22 @@ export default function ProductScreen() {
     );
   }
 
-  // ---- move cart logic INSIDE the component ----
-  const addToCart = useCartStore(s => s.add);
+  // ---- cart wiring ----
+  const add = useCartStore(s => s.add);
   const priceCents =
     product?.variants?.[0]?.price?.amount ?? product?.minPrice?.amount ?? 0;
   const compareCents = product?.variants?.[0]?.compareAtPrice?.amount;
   const inStock = product?.variants?.[0]?.inStock ?? true;
+  const currency = product?.variants?.[0]?.price?.currency
+    ?? product?.minPrice?.currency
+    ?? 'USD';
 
   const onAddToCart = () => {
-    addToCart({
+    add({
       id: product.id,
       title: product.title,
-      price: priceCents,
-      image: product.images?.[0]?.url,
+      image: product.images?.[0]?.url ?? null,
+      price: { amount: priceCents, currency },
       qty: 1,
     });
   };
@@ -98,7 +99,7 @@ export default function ProductScreen() {
       style={styles.page}
       refreshControl={
         <RefreshControl
-          refreshing={isFetching && isLoading}
+          refreshing={isFetching || isLoading}
           onRefresh={() => { void refetch(); }}
         />
       }
@@ -124,16 +125,15 @@ export default function ProductScreen() {
         <Text style={styles.title}>{product.title}</Text>
 
         <View style={styles.row}>
-          {/* use one of: 'sm' | 'md' | 'lg' */}
           <RatingStars rating={product.rating ?? 0} size="md" />
           <Text style={styles.muted}>({product.ratingCount ?? 0})</Text>
         </View>
 
         <View style={[styles.rowBetween, { marginTop: 8 }]}>
           <View style={styles.row}>
-            <Text style={styles.price}>{fmt(priceCents)}</Text>
+            <Text style={styles.price}>{fmt(priceCents, currency)}</Text>
             {compareCents && compareCents > priceCents ? (
-              <Text style={styles.compare}>{fmt(compareCents)}</Text>
+              <Text style={styles.compare}>{fmt(compareCents, currency)}</Text>
             ) : null}
           </View>
           <Text
@@ -255,7 +255,6 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: '#fff' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-  // top bar
   topRow: {
     paddingHorizontal: 12,
     paddingTop: 8,
@@ -266,7 +265,6 @@ const styles = StyleSheet.create({
   },
   iconBtn: { padding: 6 },
 
-  // gallery
   gallery: {
     width: SCREEN_W,
     aspectRatio: 1,
@@ -286,7 +284,6 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#ddd' },
   dotActive: { backgroundColor: '#333' },
 
-  // body / info
   body: { paddingHorizontal: 12, paddingVertical: 12, gap: 6 },
   brand: { color: '#666', fontSize: 13 },
   title: { fontSize: 18, fontWeight: '800' },
@@ -295,7 +292,6 @@ const styles = StyleSheet.create({
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   muted: { color: '#666' },
 
-  // price / stock
   price: { fontWeight: '800', fontSize: 20 },
   compare: { color: '#888', textDecorationLine: 'line-through', marginLeft: 8 },
   stock: {
@@ -309,10 +305,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // buttons
   ctaText: { color: '#fff', fontWeight: '700' },
 
-  // related section
   sectionHeader: {
     paddingHorizontal: 12,
     paddingVertical: 12,
