@@ -12,6 +12,7 @@ export type RootStackParamList = {
   Product: { id: string };
   Cart: undefined;
   Categories: undefined;
+  Subcategories: { categorySlug: string; categoryName: string };
   ProductList: { title?: string; category?: string };
 };
 
@@ -46,6 +47,14 @@ export default function RootNavigator() {
           options={({ route }) => ({
             headerShown: true,
             title: route.params?.title || 'Products',
+          })}
+        />
+        <Stack.Screen
+          name="Subcategories"
+          component={require('../screens/SubcategoryScreen').default}
+          options={({ route }) => ({
+            headerShown: true,
+            title: route.params?.categoryName || 'Subcategories',
           })}
         />
       </Stack.Navigator>

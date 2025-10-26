@@ -9,42 +9,44 @@ import { PRODUCTS_MOCK } from '../mocks/products';
 import ProductCard from '../components/ProductCard';
 
 type ParamList = {
-  ProductList: { title?: string; category?: string };
+  ProductList: { title?: string; category?: string; subcategory?: string };
 };
+
+function norm(s?: string) { return (s ?? '').toLowerCase(); }
+function allTextOfProduct(p: any): string {
+  const bits: string[] = [];
+  bits.push(p?.title, p?.brand, p?.category, p?.categoryName, p?.collection, p?.type);
+  if (Array.isArray(p?.tags)) bits.push(...p.tags);
+  if (Array.isArray(p?.attributes)) bits.push(...p.attributes.map((a: any) => a?.name));
+  return norm(bits.filter(Boolean).join(' '));
+}
+const regBySlug = (slug: string) =>
+  new RegExp(slug.replace(/-/g, '[-\\s_]?').replace('&', '(?:&|and)'), 'i');
 
 export default function ProductListScreen() {
   const { params } = useRoute<RouteProp<ParamList, 'ProductList'>>();
-  const { title = 'Products', category } = params ?? {};
+  const { title = 'Products', category, subcategory } = params ?? {};
 
-  const { data } = useQuery({
-    queryKey: ['catalog'],
-    queryFn: fetchCatalog,
-    staleTime: 60_000,
-  });
-
+  const { data } = useQuery({ queryKey: ['catalog'], queryFn: fetchCatalog, staleTime: 60_000 });
   const base: Product[] = useMemo(() => data?.products ?? PRODUCTS_MOCK, [data]);
 
-  // normalize category from product
-  const getCategory = (p: any): string => {
-    return (
-      p?.category ||
-      p?.categoryName ||
-      p?.collection ||
-      p?.type ||
-      p?.tags?.[0] ||
-      'Other'
-    );
-  };
-
   const list = useMemo(() => {
-    if (!category) return base;
-    return base.filter((p) => getCategory(p) === category);
-  }, [base, category]);
+    if (!category && !subcategory) return base;
+
+    const catSlug = category ? category.toLowerCase().replace(/\s+/g, '-').replace('&', 'and') : null;
+    const subSlug = subcategory ?? null;
+
+    return base.filter((p) => {
+      const txt = allTextOfProduct(p);
+      if (subSlug) return regBySlug(subSlug).test(txt);
+      if (catSlug) return regBySlug(catSlug).test(txt);
+      return true;
+    });
+  }, [base, category, subcategory]);
 
   return (
     <View style={styles.page}>
-      <Text style={styles.h1}>{category || title}</Text>
-
+      <Text style={styles.h1}>{subcategory ? title : (category || title)}</Text>
       <FlatList
         data={list}
         keyExtractor={(i) => i.id}

@@ -1,12 +1,16 @@
 import React, { useMemo } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchCatalog } from '../services/shop';
 import type { Product } from '../types/shop';
 import { PRODUCTS_MOCK } from '../mocks/products';
-import { MEGA_CATEGORIES, CATEGORY_EMOJI, TopCategory } from '../constants/megaMenu';
+import { MEGA_CATEGORIES } from '../constants/megaMenu';
+
+type ParamList = {
+  Subcategories: { categorySlug: string; categoryName: string };
+};
 
 function norm(s?: string) { return (s ?? '').toLowerCase(); }
 function allTextOfProduct(p: any): string {
@@ -16,54 +20,60 @@ function allTextOfProduct(p: any): string {
   if (Array.isArray(p?.attributes)) bits.push(...p.attributes.map((a: any) => a?.name));
   return norm(bits.filter(Boolean).join(' '));
 }
+const regBySlug = (slug: string) =>
+  new RegExp(slug.replace(/-/g, '[-\\s_]?').replace('&', '(?:&|and)'), 'i');
 
-export default function CategoryScreen() {
+export default function SubcategoryScreen() {
   const nav = useNavigation<any>();
+  const { params } = useRoute<RouteProp<ParamList, 'Subcategories'>>();
+  const { categorySlug, categoryName } = params;
+
   const { data } = useQuery({ queryKey: ['catalog'], queryFn: fetchCatalog, staleTime: 60_000 });
   const products: Product[] = useMemo(() => data?.products ?? PRODUCTS_MOCK, [data]);
 
-  // Count products per top category by fuzzy matching slug words in product fields
-  const categories = useMemo(() => {
-    const counts = new Map<string, number>();
-    const regBySlug = (slug: string) =>
-      new RegExp(slug.replace(/-/g, '[-\\s_]?').replace('&', '(?:&|and)'), 'i');
+  const top = MEGA_CATEGORIES.find(c => c.slug === categorySlug);
+  const subs = top?.subcategories ?? [];
 
+  // Count products per subcategory
+  const counts = useMemo(() => {
+    const map = new Map<string, number>();
     for (const p of products) {
       const txt = allTextOfProduct(p);
-      let matchedSlug: string | null = null;
-
-      for (const c of MEGA_CATEGORIES) {
-        if (regBySlug(c.slug).test(txt)) { matchedSlug = c.slug; break; }
-        // also accept any subcategory slug to credit the parent
-        if (c.subcategories.some(sc => regBySlug(sc.slug).test(txt))) { matchedSlug = c.slug; break; }
+      for (const sc of subs) {
+        if (regBySlug(sc.slug).test(txt)) {
+          map.set(sc.slug, (map.get(sc.slug) ?? 0) + 1);
+        }
       }
-      counts.set(matchedSlug ?? 'other', (counts.get(matchedSlug ?? 'other') ?? 0) + 1);
     }
+    return map;
+  }, [products, subs]);
 
-    const out = MEGA_CATEGORIES.map(c => ({
-      ...c,
-      count: counts.get(c.slug) ?? 0,
-      emoji: CATEGORY_EMOJI[c.slug] ?? '🛍️',
-    })).filter(c => c.count > 0);
+  const dataSource = subs
+    .map(s => ({ ...s, count: counts.get(s.slug) ?? 0 }))
+    .filter(s => s.count > 0);
 
-    // If products didn’t match, still show a single “Other”
-    if (!out.length) return [{ name: 'Other', slug: 'other', subcategories: [], count: products.length, emoji: CATEGORY_EMOJI.other }] as any;
-    return out;
-  }, [products]);
-
-  const onPress = (cat: TopCategory) => {
-    nav.navigate('Subcategories', { categorySlug: cat.slug, categoryName: cat.name });
+  const onPress = (sub: { name: string; slug: string }) => {
+    nav.navigate('ProductList', {
+      title: sub.name,
+      category: categoryName,
+      subcategory: sub.slug,
+    });
   };
 
   return (
     <FlatList
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <Text style={styles.h1}>{categoryName}</Text>
+          <Text style={styles.muted}>Choose a subcategory</Text>
+        </View>
+      }
       contentContainerStyle={styles.grid}
-      data={categories as any[]}
+      data={dataSource}
       numColumns={2}
-      keyExtractor={(c: any) => c.slug}
+      keyExtractor={(c) => c.slug}
       renderItem={({ item }) => (
         <Pressable style={styles.card} onPress={() => onPress(item)}>
-          <Text style={styles.emoji}>{item.emoji}</Text>
           <Text style={styles.title} numberOfLines={2}>{item.name}</Text>
           <Text style={styles.muted}>{item.count} item{item.count === 1 ? '' : 's'}</Text>
         </Pressable>
@@ -73,10 +83,14 @@ export default function CategoryScreen() {
 }
 
 const styles = StyleSheet.create({
+  header: { paddingHorizontal: 12, paddingTop: 12, paddingBottom: 6 },
+  h1: { fontSize: 20, fontWeight: '800', color: '#111' },
+  muted: { color: '#5f6a7d' },
+
   grid: { padding: 12, gap: 12 },
   card: {
     flex: 1,
-    minHeight: 120,
+    minHeight: 100,
     borderWidth: 1,
     borderColor: '#e6e8eb',
     borderRadius: 12,
@@ -85,9 +99,7 @@ const styles = StyleSheet.create({
     margin: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
   },
-  emoji: { fontSize: 32 },
   title: { fontSize: 15, fontWeight: '700', color: '#111', textAlign: 'center' },
-  muted: { color: '#5f6a7d' },
 });
