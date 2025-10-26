@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import type { AccountStackParamList } from '../../navigation/AccountNavigator';
 import TextIcon from '../../components/icons/TextIcon';
 
 type Nav = any;
