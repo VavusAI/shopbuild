@@ -1,4 +1,5 @@
-import React, { useMemo, useRef, useState } from 'react';
+// src/screens/ProductScreen.tsx
+import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -24,9 +25,7 @@ import { RatingStars } from '../components/RatingStars';
 import { Button } from '../components/ui/Button';
 import ProductCard from '../components/ProductCard';
 import { PRODUCTS_MOCK } from '../mocks/products';
-
-// If you have a cart store, import it and use it here:
-// import { useCartStore } from '../stores/cart';
+import { useCartStore } from '../stores/cart';
 
 type ParamList = { Product: { id: string } };
 
@@ -72,15 +71,21 @@ export default function ProductScreen() {
     );
   }
 
+  // ---- move cart logic INSIDE the component ----
+  const addToCart = useCartStore(s => s.add);
   const priceCents =
     product?.variants?.[0]?.price?.amount ?? product?.minPrice?.amount ?? 0;
   const compareCents = product?.variants?.[0]?.compareAtPrice?.amount;
   const inStock = product?.variants?.[0]?.inStock ?? true;
 
   const onAddToCart = () => {
-    // If you have a cart store, wire it here:
-    // useCartStore.getState().addItem({ id: product.id, title: product.title, price: priceCents, image: product.images?.[0]?.url, qty: 1 });
-    console.log('Add to cart', product.id);
+    addToCart({
+      id: product.id,
+      title: product.title,
+      price: priceCents,
+      image: product.images?.[0]?.url,
+      qty: 1,
+    });
   };
 
   const onBuyNow = () => {
@@ -92,10 +97,12 @@ export default function ProductScreen() {
     <ScrollView
       style={styles.page}
       refreshControl={
-        <RefreshControl refreshing={isFetching && isLoading} onRefresh={() => refetch()} />
+        <RefreshControl
+          refreshing={isFetching && isLoading}
+          onRefresh={() => { void refetch(); }}
+        />
       }
     >
-      {/* Top bar actions (since native header title is empty) */}
       <View style={styles.topRow}>
         <Pressable onPress={() => nav.goBack()} hitSlop={10} style={styles.iconBtn}>
           <Icon name="arrow-left" size={20} color="#111" />
@@ -110,21 +117,18 @@ export default function ProductScreen() {
         </View>
       </View>
 
-      {/* Gallery */}
       <Gallery images={product.images?.map(i => i.url).filter(Boolean) ?? []} />
 
-      {/* Title / Brand */}
       <View style={styles.body}>
         <Text style={styles.brand}>{product.brand ?? 'Brand'}</Text>
         <Text style={styles.title}>{product.title}</Text>
 
-        {/* Rating */}
         <View style={styles.row}>
-          <RatingStars rating={product.rating ?? 0} size={16} />
+          {/* use one of: 'sm' | 'md' | 'lg' */}
+          <RatingStars rating={product.rating ?? 0} size="md" />
           <Text style={styles.muted}>({product.ratingCount ?? 0})</Text>
         </View>
 
-        {/* Price block */}
         <View style={[styles.rowBetween, { marginTop: 8 }]}>
           <View style={styles.row}>
             <Text style={styles.price}>{fmt(priceCents)}</Text>
@@ -142,7 +146,6 @@ export default function ProductScreen() {
           </Text>
         </View>
 
-        {/* Actions */}
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
           <Button size="lg" onPress={onAddToCart} style={{ flex: 1 }}>
             <Text style={styles.ctaText}>Add to Cart</Text>
@@ -152,17 +155,14 @@ export default function ProductScreen() {
           </Button>
         </View>
 
-        {/* Description / bullets (placeholder until API has real fields) */}
         <View style={{ marginTop: 18, gap: 6 }}>
           <Text style={styles.sectionTitle}>About this item</Text>
           <Text style={styles.muted}>
-            High-quality materials, great performance, and designed for daily use. (Replace with
-            product.description once available.)
+            High-quality materials, great performance, and designed for daily use.
           </Text>
         </View>
       </View>
 
-      {/* Related */}
       <View style={{ marginTop: 12 }}>
         <View style={[styles.sectionHeader]}>
           <Text style={styles.sectionTitle}>Related items</Text>
@@ -204,8 +204,6 @@ export default function ProductScreen() {
   );
 }
 
-/* ---------- Subcomponents ---------- */
-
 function Gallery({ images }: { images: string[] }) {
   const [index, setIndex] = useState(0);
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -237,20 +235,12 @@ function Gallery({ images }: { images: string[] }) {
       />
       <View style={styles.dots}>
         {images.map((_, i) => (
-          <View
-            key={i}
-            style={[
-              styles.dot,
-              i === index ? styles.dotActive : null,
-            ]}
-          />
+          <View key={i} style={[styles.dot, i === index ? styles.dotActive : null]} />
         ))}
       </View>
     </View>
   );
 }
-
-/* ---------- helpers ---------- */
 
 function fmt(amountCents: number, currency = 'USD') {
   const amount = (amountCents ?? 0) / 100;
@@ -261,12 +251,11 @@ function fmt(amountCents: number, currency = 'USD') {
   }
 }
 
-/* ---------- styles ---------- */
-
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: '#fff' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
+  // top bar
   topRow: {
     paddingHorizontal: 12,
     paddingTop: 8,
@@ -275,7 +264,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  iconBtn: { padding: 6 },
 
+  // gallery
   gallery: {
     width: SCREEN_W,
     aspectRatio: 1,
@@ -295,6 +286,7 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#ddd' },
   dotActive: { backgroundColor: '#333' },
 
+  // body / info
   body: { paddingHorizontal: 12, paddingVertical: 12, gap: 6 },
   brand: { color: '#666', fontSize: 13 },
   title: { fontSize: 18, fontWeight: '800' },
@@ -303,6 +295,7 @@ const styles = StyleSheet.create({
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   muted: { color: '#666' },
 
+  // price / stock
   price: { fontWeight: '800', fontSize: 20 },
   compare: { color: '#888', textDecorationLine: 'line-through', marginLeft: 8 },
   stock: {
@@ -316,11 +309,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
+  // buttons
   ctaText: { color: '#fff', fontWeight: '700' },
-  iconBtn: { padding: 6 },
 
+  // related section
   sectionHeader: {
-    paddingHorizontal: H_PADDING,
+    paddingHorizontal: 12,
     paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',

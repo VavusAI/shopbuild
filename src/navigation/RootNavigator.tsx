@@ -2,6 +2,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
+import TabNavigator from './TabNavigator';
 import ProductScreen from '../screens/ProductScreen';
 import CartScreen from '../screens/CartScreen';
 
@@ -32,6 +33,12 @@ export default function RootNavigator() {
             title: 'Cart',
             animation: 'slide_from_right',
           }}
+        />
+        <Stack.Screen name="Tabs" component={TabNavigator} />
+        <Stack.Screen
+          name="Product"
+          component={ProductScreen}
+          options={{ headerShown: true, title: '', animation: 'slide_from_right' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
