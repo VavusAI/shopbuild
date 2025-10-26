@@ -1,8 +1,7 @@
-// src/components/icons/VectorIcon.tsx
 import React from 'react';
 import * as L from 'lucide-react-native';
 
-// Central, app-wide icon map. Add more names as you need them.
+// Central icon map. Add as you need.
 const ICONS = {
   // navigation / UI
   'arrow-left': L.ArrowLeft,
@@ -12,6 +11,11 @@ const ICONS = {
   'search': L.Search,
   'camera': L.Camera,
   'mic': L.Mic,
+  'home': L.Home,
+  'user': L.User,
+  'bell': L.Bell,
+  'heart': L.Heart,
+  'package': L.Package,
 
   // categories
   'electronics': L.Smartphone,
