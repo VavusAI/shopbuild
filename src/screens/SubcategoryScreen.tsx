@@ -12,16 +12,13 @@ type ParamList = {
   Subcategories: { categorySlug: string; categoryName: string };
 };
 
-function norm(s?: string) { return (s ?? '').toLowerCase(); }
-function allTextOfProduct(p: any): string {
-  const bits: string[] = [];
-  bits.push(p?.title, p?.brand, p?.category, p?.categoryName, p?.collection, p?.type);
-  if (Array.isArray(p?.tags)) bits.push(...p.tags);
-  if (Array.isArray(p?.attributes)) bits.push(...p.attributes.map((a: any) => a?.name));
-  return norm(bits.filter(Boolean).join(' '));
+function toText(p: any) {
+  const parts: string[] = [];
+  parts.push(p?.title, p?.brand, p?.category, p?.categoryName, p?.collection, p?.type);
+  if (Array.isArray(p?.tags)) parts.push(...p.tags);
+  if (Array.isArray(p?.attributes)) parts.push(...p.attributes.map((a: any) => a?.name));
+  return parts.filter(Boolean).join(' ').toLowerCase();
 }
-const regBySlug = (slug: string) =>
-  new RegExp(slug.replace(/-/g, '[-\\s_]?').replace('&', '(?:&|and)'), 'i');
 
 export default function SubcategoryScreen() {
   const nav = useNavigation<any>();
@@ -34,31 +31,21 @@ export default function SubcategoryScreen() {
   const top = MEGA_CATEGORIES.find(c => c.slug === categorySlug);
   const subs = top?.subcategories ?? [];
 
-  // Count products per subcategory
+  // Soft counts per subcategory
   const counts = useMemo(() => {
     const map = new Map<string, number>();
+    for (const s of subs) map.set(s.slug, 0);
     for (const p of products) {
-      const txt = allTextOfProduct(p);
-      for (const sc of subs) {
-        if (regBySlug(sc.slug).test(txt)) {
-          map.set(sc.slug, (map.get(sc.slug) ?? 0) + 1);
+      const txt = toText(p);
+      for (const s of subs) {
+        const words = s.slug.replace(/-/g, ' ').replace('&', 'and').split(/\s+/).filter(Boolean);
+        if (words.some(w => txt.includes(w))) {
+          map.set(s.slug, (map.get(s.slug) ?? 0) + 1);
         }
       }
     }
     return map;
   }, [products, subs]);
-
-  const dataSource = subs
-    .map(s => ({ ...s, count: counts.get(s.slug) ?? 0 }))
-    .filter(s => s.count > 0);
-
-  const onPress = (sub: { name: string; slug: string }) => {
-    nav.navigate('ProductList', {
-      title: sub.name,
-      category: categoryName,
-      subcategory: sub.slug,
-    });
-  };
 
   return (
     <FlatList
@@ -69,13 +56,24 @@ export default function SubcategoryScreen() {
         </View>
       }
       contentContainerStyle={styles.grid}
-      data={dataSource}
+      data={subs}
       numColumns={2}
       keyExtractor={(c) => c.slug}
       renderItem={({ item }) => (
-        <Pressable style={styles.card} onPress={() => onPress(item)}>
+        <Pressable
+          style={styles.card}
+          onPress={() =>
+            nav.navigate('ProductList', {
+              title: item.name,
+              category: categoryName,
+              subcategory: item.slug,
+            })
+          }
+        >
           <Text style={styles.title} numberOfLines={2}>{item.name}</Text>
-          <Text style={styles.muted}>{item.count} item{item.count === 1 ? '' : 's'}</Text>
+          <Text style={[styles.muted, !(counts.get(item.slug) ?? 0) && { opacity: 0.7 }]}>
+            {(counts.get(item.slug) ?? 0)} item{(counts.get(item.slug) ?? 0) === 1 ? '' : 's'}
+          </Text>
         </Pressable>
       )}
     />

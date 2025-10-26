@@ -20,7 +20,7 @@ import ProductCardSkeleton from '../components/Skeletons/ProductCardSkeleton';
 import { Button } from '../components/ui/Button';
 import TopSearchBar from '../components/TopSearchBar';
 import { PRODUCTS_MOCK } from '../mocks/products';
-import TextIcon from '../components/icons/TextIcon';
+import VectorIcon from '../components/icons/VectorIcon';
 
 const CARD_GUTTER = 12;
 const H_PADDING = 12;
@@ -212,7 +212,7 @@ export default function HomeScreen() {
               </Text>
               <Button size="lg" style={styles.ctaRow} onPress={() => (nav as any)?.navigate?.('Categories')}>
                 <Text style={styles.ctaTxt}>Start Shopping</Text>
-                <TextIcon name="chevron-right" size={16} color="#fff" />
+                <VectorIcon name="chevron-right" size={16} color="#fff" />
               </Button>
             </View>
           </View>
@@ -261,7 +261,7 @@ function SectionHeader({
       {!!actionLabel && (
         <Button variant="link" style={styles.linkRow}>
           <Text style={styles.linkTxt}>{actionLabel}</Text>
-          <TextIcon name="chevron-right" size={14} color="#111" />
+          <VectorIcon name="chevron-right" size={14} color="#111" />
         </Button>
       )}
     </View>

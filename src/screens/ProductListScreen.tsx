@@ -7,21 +7,19 @@ import { fetchCatalog } from '../services/shop';
 import type { Product } from '../types/shop';
 import { PRODUCTS_MOCK } from '../mocks/products';
 import ProductCard from '../components/ProductCard';
+import { CATEGORY_KEYWORDS } from '../constants/megaMenu';
 
 type ParamList = {
   ProductList: { title?: string; category?: string; subcategory?: string };
 };
 
-function norm(s?: string) { return (s ?? '').toLowerCase(); }
-function allTextOfProduct(p: any): string {
-  const bits: string[] = [];
-  bits.push(p?.title, p?.brand, p?.category, p?.categoryName, p?.collection, p?.type);
-  if (Array.isArray(p?.tags)) bits.push(...p.tags);
-  if (Array.isArray(p?.attributes)) bits.push(...p.attributes.map((a: any) => a?.name));
-  return norm(bits.filter(Boolean).join(' '));
+function toText(p: any) {
+  const parts: string[] = [];
+  parts.push(p?.title, p?.brand, p?.category, p?.categoryName, p?.collection, p?.type);
+  if (Array.isArray(p?.tags)) parts.push(...p.tags);
+  if (Array.isArray(p?.attributes)) parts.push(...p.attributes.map((a: any) => a?.name));
+  return parts.filter(Boolean).join(' ').toLowerCase();
 }
-const regBySlug = (slug: string) =>
-  new RegExp(slug.replace(/-/g, '[-\\s_]?').replace('&', '(?:&|and)'), 'i');
 
 export default function ProductListScreen() {
   const { params } = useRoute<RouteProp<ParamList, 'ProductList'>>();
@@ -31,16 +29,36 @@ export default function ProductListScreen() {
   const base: Product[] = useMemo(() => data?.products ?? PRODUCTS_MOCK, [data]);
 
   const list = useMemo(() => {
+    // No filters -> everything
     if (!category && !subcategory) return base;
 
-    const catSlug = category ? category.toLowerCase().replace(/\s+/g, '-').replace('&', 'and') : null;
-    const subSlug = subcategory ?? null;
+    const txtOf = (p: any) => toText(p);
 
-    return base.filter((p) => {
-      const txt = allTextOfProduct(p);
-      if (subSlug) return regBySlug(subSlug).test(txt);
-      if (catSlug) return regBySlug(catSlug).test(txt);
-      return true;
+    // Slug helpers
+    const catSlug = category ? category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-') : null;
+    const subSlug = subcategory ? subcategory.toLowerCase() : null;
+
+    const catKeywords = catSlug ? CATEGORY_KEYWORDS[catSlug] ?? [] : [];
+
+    return base.filter(p => {
+      const txt = txtOf(p);
+
+      // If subcategory is provided, try to match its words directly
+      if (subSlug) {
+        const words = subSlug.replace(/-/g, ' ').split(/\s+/).filter(Boolean);
+        if (words.some(w => txt.includes(w))) return true;
+      }
+
+      // Otherwise try category keywords
+      if (catKeywords.length && catKeywords.some(k => txt.includes(k))) return true;
+
+      // Fallback: if product category/collection/type contains category name string
+      if (catSlug) {
+        const catWords = catSlug.replace(/-/g, ' ').split(/\s+/).filter(Boolean);
+        if (catWords.some(w => txt.includes(w))) return true;
+      }
+
+      return false;
     });
   }, [base, category, subcategory]);
 

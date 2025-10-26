@@ -29,6 +29,7 @@ import { Button } from '../components/ui/Button';
 import ProductCard from '../components/ProductCard';
 import { PRODUCTS_MOCK } from '../mocks/products';
 import { useCartStore } from '../stores/cart';
+import VectorIcon from '../components/icons/VectorIcon';
 
 // ---------- text icons (no vector fonts) ----------
 const BACK_GLYPH = '❮'; // U+276E looks clean and bold
@@ -99,26 +100,20 @@ export default function ProductScreen() {
   if (!product) {
     return (
       <View style={styles.center}>
-        <View style={[styles.topRow, { paddingTop: Math.max(insets.top, 8) }]}>
-          <Pressable
-            onPress={handleBack}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            hitSlop={16}
-            style={styles.backBtn}
-          >
-            <Text style={styles.backGlyph}>{BACK_GLYPH}</Text>
+        <View style={styles.topRow}>
+          <Pressable onPress={() => nav.goBack()} hitSlop={10} style={styles.iconBtn}>
+            <VectorIcon name="arrow-left" size={26} />
           </Pressable>
-
-          <View style={styles.actionsRow}>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
             <Pressable onPress={() => {}} hitSlop={10} style={styles.iconBtn}>
-              <Text style={styles.iconTxt}>{SHARE_GLYPH}</Text>
+              <VectorIcon name="share" size={22} />
             </Pressable>
-            <Pressable onPress={() => anyNavNavigateCart(nav)} hitSlop={10} style={styles.iconBtn}>
-              <Text style={styles.iconTxt}>{CART_GLYPH}</Text>
+            <Pressable onPress={() => nav.navigate('Cart' as never)} hitSlop={10} style={styles.iconBtn}>
+              <VectorIcon name="cart" size={22} />
             </Pressable>
           </View>
         </View>
+
         <Text>Product not found.</Text>
       </View>
     );

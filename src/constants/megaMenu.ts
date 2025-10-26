@@ -72,7 +72,6 @@ export const MEGA_CATEGORIES: TopCategory[] = [
   },
 ];
 
-/** Small, nice-looking emoji per top category (no native icons needed) */
 export const CATEGORY_EMOJI: Record<string, string> = {
   'electronics': '📱',
   'fashion': '👗',
@@ -80,4 +79,28 @@ export const CATEGORY_EMOJI: Record<string, string> = {
   'beauty-health': '💄',
   'sports-outdoors': '🏅',
   'other': '🛍️',
+};
+
+// Loose keyword map to better match catalog data
+export const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  'electronics': [
+    'phone','mobile','tablet','laptop','computer','pc','notebook',
+    'camera','tv','audio','speaker','earbud','headphone','console','gaming','wearable','smartwatch'
+  ],
+  'fashion': [
+    'fashion','clothing','apparel','dress','shirt','pants','jeans','jacket','coat',
+    'shoe','sneaker','bag','accessorie','jewelry','watch','skirt','hoodie'
+  ],
+  'home-garden': [
+    'home','kitchen','dining','cookware','furniture','sofa','chair','table','bed',
+    'bedding','bath','decor','garden','outdoor','tool','hardware'
+  ],
+  'beauty-health': [
+    'beauty','makeup','skincare','haircare','fragrance','perfume',
+    'health','wellness','personal care','cream','serum','shampoo'
+  ],
+  'sports-outdoors': [
+    'sport','outdoor','fitness','exercise','gym','bike','bicycle','cycling',
+    'hike','camp','tent','water sport','winter sport','yoga'
+  ],
 };

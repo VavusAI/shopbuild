@@ -5,10 +5,9 @@ import {
   TextInput,
   StyleSheet,
   Pressable,
-  Text,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import TextIcon from './icons/TextIcon';
+import VectorIcon from './icons/VectorIcon';
 
 export default function TopSearchBar({
                                        value,
@@ -24,7 +23,7 @@ export default function TopSearchBar({
   return (
     <View style={[styles.wrap, { paddingTop: Math.max(insets.top, 8) }]}>
       <View style={styles.row}>
-        <TextIcon name="search" size={18} color="#777" style={styles.leftIcon} />
+        <VectorIcon name="search" size={16} color="#5f6a7d" />
         <TextInput
           style={styles.input}
           value={value}
@@ -35,10 +34,10 @@ export default function TopSearchBar({
           onSubmitEditing={onSubmitEditing}
         />
         <Pressable style={styles.iconBtn} hitSlop={10} onPress={() => {}}>
-          <TextIcon name="camera" size={18} color="#111" />
+          <VectorIcon name="camera" size={16} color="#5f6a7d" />
         </Pressable>
         <Pressable style={[styles.iconBtn, { marginRight: 4 }]} hitSlop={10} onPress={() => {}}>
-          <TextIcon name="mic" size={18} color="#111" />
+          <VectorIcon name="mic" size={16} color="#5f6a7d" />
         </Pressable>
       </View>
     </View>
