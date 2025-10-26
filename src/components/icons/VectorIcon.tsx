@@ -23,6 +23,13 @@ const ICONS = {
   'home-garden': L.Home,
   'beauty-health': L.Sparkles,
   'sports-outdoors': L.Dumbbell,
+
+  // explicit names used by the Amazon taxonomy
+  'book': L.BookOpen,
+  'gamepad': L.Gamepad2,
+  'music': L.Music,
+  'dumbbell': L.Dumbbell,
+  'sparkles': L.Sparkles,
 } as const;
 
 export type VectorIconName = keyof typeof ICONS;

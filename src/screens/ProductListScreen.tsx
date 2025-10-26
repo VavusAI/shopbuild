@@ -7,13 +7,13 @@ import { fetchCatalog } from '../services/shop';
 import type { Product } from '../types/shop';
 import { PRODUCTS_MOCK } from '../mocks/products';
 import ProductCard from '../components/ProductCard';
-import { CATEGORY_KEYWORDS } from '../constants/megaMenu';
+import { AMAZON_KEYWORDS } from '../constants/taxonomy.amazon';
 
 type ParamList = {
   ProductList: { title?: string; category?: string; subcategory?: string };
 };
 
-function toText(p: any) {
+function textOf(p: any) {
   const parts: string[] = [];
   parts.push(p?.title, p?.brand, p?.category, p?.categoryName, p?.collection, p?.type);
   if (Array.isArray(p?.tags)) parts.push(...p.tags);
@@ -26,45 +26,29 @@ export default function ProductListScreen() {
   const { title = 'Products', category, subcategory } = params ?? {};
 
   const { data } = useQuery({ queryKey: ['catalog'], queryFn: fetchCatalog, staleTime: 60_000 });
-  const base: Product[] = useMemo(() => data?.products ?? PRODUCTS_MOCK, [data]);
+  const all: Product[] = useMemo(() => data?.products ?? PRODUCTS_MOCK, [data]);
 
   const list = useMemo(() => {
-    // No filters -> everything
-    if (!category && !subcategory) return base;
+    if (!category && !subcategory) return all;
 
-    const txtOf = (p: any) => toText(p);
+    const kw = AMAZON_KEYWORDS[category ?? ''] ?? [];
+    const subWords = (subcategory ?? '')
+      .toLowerCase()
+      .replace(/-/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
 
-    // Slug helpers
-    const catSlug = category ? category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-') : null;
-    const subSlug = subcategory ? subcategory.toLowerCase() : null;
-
-    const catKeywords = catSlug ? CATEGORY_KEYWORDS[catSlug] ?? [] : [];
-
-    return base.filter(p => {
-      const txt = txtOf(p);
-
-      // If subcategory is provided, try to match its words directly
-      if (subSlug) {
-        const words = subSlug.replace(/-/g, ' ').split(/\s+/).filter(Boolean);
-        if (words.some(w => txt.includes(w))) return true;
-      }
-
-      // Otherwise try category keywords
-      if (catKeywords.length && catKeywords.some(k => txt.includes(k))) return true;
-
-      // Fallback: if product category/collection/type contains category name string
-      if (catSlug) {
-        const catWords = catSlug.replace(/-/g, ' ').split(/\s+/).filter(Boolean);
-        if (catWords.some(w => txt.includes(w))) return true;
-      }
-
+    return all.filter(p => {
+      const t = textOf(p);
+      if (subWords.length && subWords.some(w => t.includes(w))) return true;
+      if (kw.length && kw.some(w => t.includes(w))) return true;
       return false;
     });
-  }, [base, category, subcategory]);
+  }, [all, category, subcategory]);
 
   return (
     <View style={styles.page}>
-      <Text style={styles.h1}>{subcategory ? title : (category || title)}</Text>
+      <Text style={styles.h1}>{title}</Text>
       <FlatList
         data={list}
         keyExtractor={(i) => i.id}
