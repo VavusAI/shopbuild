@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   wrap:{ borderTopWidth:1, borderColor:'#eee', backgroundColor:'#fafafa', paddingHorizontal:16, paddingVertical:24 },
   grid:{ gap:16 },
   h3:{ fontWeight:'700', marginBottom:8 },
-  link:{ color:'#666', marginBottom:6 },
-  sub:{ color:'#666' },
-  copy:{ textAlign:'center', color:'#666', marginTop:16, borderTopWidth:1, borderColor:'#eee', paddingTop:16, fontSize:12 },
+  link:{ color:'#5f6a7d', marginBottom:6 },
+  sub:{ color:'#5f6a7d' },
+  copy:{ textAlign:'center', color:'#5f6a7d', marginTop:16, borderTopWidth:1, borderColor:'#eee', paddingTop:16, fontSize:12 },
 });

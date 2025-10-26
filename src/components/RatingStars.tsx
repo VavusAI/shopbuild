@@ -61,5 +61,5 @@ export function RatingStars({
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   num: { marginLeft: 6, fontSize: 12, fontWeight: '600', color: '#111' },
-  count: { marginLeft: 4, fontSize: 12, color: '#666' },
+  count: { marginLeft: 4, fontSize: 12, color: '#5f6a7d' },
 });

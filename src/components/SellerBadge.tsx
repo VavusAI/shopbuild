@@ -26,7 +26,7 @@ export function SellerBadge({
 
   return (
     <Pressable onPress={go} style={styles.row}>
-      <Icon name="store-outline" size={14} color="#666" />
+      <Icon name="store-outline" size={14} color="#5f6a7d" />
       <Text style={styles.name}>{sellerName}</Text>
       {verified && <Icon name="check-decagram" size={14} color="#0ea5e9" />}
     </Pressable>
@@ -35,5 +35,5 @@ export function SellerBadge({
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  name: { color: '#666', fontSize: 12 },
+  name: { color: '#5f6a7d', fontSize: 12 },
 });

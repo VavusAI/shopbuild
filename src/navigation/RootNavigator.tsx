@@ -4,11 +4,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TabNavigator from './TabNavigator';
 import ProductScreen from '../screens/ProductScreen';
 import CartScreen from '../screens/CartScreen';
+import CategoryScreen from '../screens/CategoryScreen';
+import ProductListScreen from '../screens/ProductListScreen';
 
 export type RootStackParamList = {
   Tabs: undefined;
   Product: { id: string };
   Cart: undefined;
+  Categories: undefined;
+  ProductList: { title?: string; category?: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,6 +34,19 @@ export default function RootNavigator() {
           name="Cart"
           component={CartScreen}
           options={{ headerShown: true, title: 'Cart', animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="Categories"
+          component={CategoryScreen}
+          options={{ headerShown: true, title: 'Categories' }}
+        />
+        <Stack.Screen
+          name="ProductList"
+          component={ProductListScreen}
+          options={({ route }) => ({
+            headerShown: true,
+            title: route.params?.title || 'Products',
+          })}
         />
       </Stack.Navigator>
     </NavigationContainer>

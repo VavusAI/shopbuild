@@ -25,5 +25,5 @@ const styles = StyleSheet.create({
   star: { fontSize: 12 },
   filled: { color: '#f2b01e' },
   empty: { color: '#ddd' },
-  count: { color: '#666', fontSize: 12 },
+  count: { color: '#5f6a7d', fontSize: 12 },
 });

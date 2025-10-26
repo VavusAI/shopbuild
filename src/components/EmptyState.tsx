@@ -12,5 +12,5 @@ export default function EmptyState({ title, subtitle }: { title: string; subtitl
 const styles = StyleSheet.create({
   wrap: { alignItems: 'center', paddingVertical: 40, paddingHorizontal: 20 },
   title: { fontSize: 16, fontWeight: '600' },
-  sub: { fontSize: 13, color: '#666', marginTop: 6, textAlign: 'center' },
+  sub: { fontSize: 13, color: '#5f6a7d', marginTop: 6, textAlign: 'center' },
 });

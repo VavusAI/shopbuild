@@ -1,78 +1,75 @@
 // src/components/TopSearchBar.tsx
 import React from 'react';
-import { View, TextInput, Pressable, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-// ✅ use the safe-area-context version
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-type Props = {
-  value: string;
-  onChangeText: (v: string) => void;
-  onCameraPress?: () => void;
-  onMicPress?: () => void;
-};
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Pressable,
+  Text,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import TextIcon from './icons/TextIcon';
 
 export default function TopSearchBar({
                                        value,
                                        onChangeText,
-                                       onCameraPress,
-                                       onMicPress,
-                                     }: Props) {
+                                       onSubmitEditing,
+                                     }: {
+  value: string;
+  onChangeText: (t: string) => void;
+  onSubmitEditing?: () => void;
+}) {
+  const insets = useSafeAreaInsets();
+
   return (
-    // edges={['top']} adds padding only above, so we don't overlap the notch/camera
-    <SafeAreaView edges={['top']} style={styles.safe}>
-      <View style={styles.wrap}>
-        <Icon name="search" size={18} color="#666" />
+    <View style={[styles.wrap, { paddingTop: Math.max(insets.top, 8) }]}>
+      <View style={styles.row}>
+        <TextIcon name="search" size={18} color="#777" style={styles.leftIcon} />
         <TextInput
+          style={styles.input}
           value={value}
           onChangeText={onChangeText}
           placeholder="Search or ask a question"
-          placeholderTextColor="#999"
-          style={styles.input}
-          autoCorrect={false}
+          placeholderTextColor="#9aa3ad"
           returnKeyType="search"
+          onSubmitEditing={onSubmitEditing}
         />
-        <Pressable onPress={onCameraPress} style={styles.iconBtn} hitSlop={10}>
-          <Icon name="camera" size={18} color="#555" />
+        <Pressable style={styles.iconBtn} hitSlop={10} onPress={() => {}}>
+          <TextIcon name="camera" size={18} color="#111" />
         </Pressable>
-        <Pressable onPress={onMicPress} style={styles.iconBtn} hitSlop={10}>
-          <Icon name="mic" size={18} color="#555" />
+        <Pressable style={[styles.iconBtn, { marginRight: 4 }]} hitSlop={10} onPress={() => {}}>
+          <TextIcon name="mic" size={18} color="#111" />
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // header background (like Amazon’s subtle strip)
-  safe: {
-    backgroundColor: '#f2f2f2',
-  },
   wrap: {
-    marginHorizontal: 10,
-    marginBottom: 8,
-    // no fixed marginTop; the SafeAreaView handles it
-    paddingHorizontal: 12,
-    height: 46,
-    borderRadius: 23,
     backgroundColor: '#fff',
+    paddingBottom: 8,
+  },
+  row: {
+    marginHorizontal: 12,
+    marginBottom: 8,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#e6e8eb',
     flexDirection: 'row',
     alignItems: 'center',
-    // soft shadow
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
   },
+  leftIcon: { marginLeft: 10 },
   input: {
     flex: 1,
     paddingHorizontal: 10,
-    fontSize: 16,
+    paddingVertical: 10,
+    fontSize: 15,
     color: '#111',
   },
   iconBtn: {
-    padding: 6,
-    marginLeft: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
 });

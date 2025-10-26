@@ -21,7 +21,7 @@ export default function Header() {
 
         {/* inline search stub – we’ll replace with real SearchBar when ready */}
         <Pressable onPress={() => nav.navigate('Search' as never)} style={styles.search}>
-          <Icon name="magnify" size={18} color="#666"/>
+          <Icon name="magnify" size={18} color="#5f6a7d"/>
           <Text style={styles.searchPh}>Search products</Text>
         </Pressable>
 
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   logoRow:{ flexDirection:'row', alignItems:'center', gap:6 },
   logoText:{ fontSize:18, fontWeight:'800' },
   search:{ flex:1, flexDirection:'row', alignItems:'center', gap:8, backgroundColor:'#f6f6f6', borderRadius:12, paddingHorizontal:10, paddingVertical:8, borderWidth:1, borderColor:'#eee' },
-  searchPh:{ color:'#666' },
+  searchPh:{ color:'#5f6a7d' },
   actions:{ flexDirection:'row', alignItems:'center', gap:4 },
   badge:{ position:'absolute', right:2, top:-2, backgroundColor:'#111', borderRadius:999, minWidth:16, height:16, alignItems:'center', justifyContent:'center', paddingHorizontal:3 },
   badgeText:{ color:'#fff', fontSize:10, fontWeight:'700' },
