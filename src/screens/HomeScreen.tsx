@@ -20,9 +20,11 @@ import TopSearchBar from '../components/TopSearchBar';
 import { PRODUCTS_MOCK } from '../mocks/products';
 
 const CARD_GUTTER = 12;
+const H_PADDING = 12;                         // <— new
 const SCREEN_W = Dimensions.get('window').width;
-const CARD_W = Math.min(280, Math.max(220, SCREEN_W * 0.72));
-const SKELETON_COUNT = 6;
+const CARD_W = (SCREEN_W - H_PADDING * 2 - CARD_GUTTER) / 2;  // <— two full cards
+const SKELETON_COUNT = 6 as const;
+
 
 // simple horizontal separator at module scope
 const HSeparator = () => <View style={styles.hSep} />;
@@ -207,13 +209,16 @@ function Carousel({
         data={data}
         keyExtractor={item => item.id}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.carouselContent}
+        contentContainerStyle={styles.carouselContent}   // uses H_PADDING now
         ItemSeparatorComponent={HSeparator}
+        snapToInterval={CARD_W + CARD_GUTTER}            // <— snap per card
+        snapToAlignment="start"
+        decelerationRate="fast"
         renderItem={({ item, index }) => (
           <View
             style={[
               styles.cardWrap,
-              { width: CARD_W },
+              { width: CARD_W },                           // <— exact card width
               index === data.length - 1 ? styles.lastCard : null,
             ]}
           >
@@ -300,9 +305,9 @@ const styles = StyleSheet.create({
 
   carouselWrap: { paddingBottom: 8 },
   carouselTint: { backgroundColor: '#fafafa' },
-  carouselContent: { paddingHorizontal: 12 },
+  carouselContent: { paddingHorizontal: H_PADDING },     // <— use H_PADDING
   cardWrap: {},
-  lastCard: { marginRight: 12 },
+  lastCard: { marginRight: H_PADDING },                  // <— match side padding
   hSep: { width: CARD_GUTTER },
 
   skelColumn: { gap: 12 },
