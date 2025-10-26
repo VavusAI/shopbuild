@@ -1,3 +1,4 @@
+// src/stores/cart.ts
 import { create } from 'zustand';
 import { MMKV } from 'react-native-mmkv';
 
@@ -14,23 +15,46 @@ const storage = new MMKV({ id: 'cart' });
 const KEY = 'cart/items';
 
 function load(): CartItem[] {
-  try { return JSON.parse(storage.getString(KEY) ?? '[]'); } catch { return []; }
+  try {
+    return JSON.parse(storage.getString(KEY) ?? '[]');
+  } catch {
+    return [];
+  }
 }
-function save(items: CartItem[]) { storage.set(KEY, JSON.stringify(items)); }
+function save(items: CartItem[]) {
+  storage.set(KEY, JSON.stringify(items));
+}
 
-export const useCartStore = create<CartState>((set, get) => ({
+export const useCartStore = create<CartState>((set) => ({
   items: load(),
-  add: (item) => set(s => {
-    const i = s.items.findIndex(x => x.id === item.id);
-    const next = [...s.items];
-    if (i >= 0) next[i] = { ...next[i], qty: next[i].qty + item.qty };
-    else next.push(item);
-    save(next); return { items: next };
-  }),
-  remove: (id) => set(s => { const next = s.items.filter(x => x.id !== id); save(next); return { items: next }; }),
-  setQty: (id, qty) => set(s => {
-    const next = s.items.map(x => x.id === id ? { ...x, qty } : x);
-    save(next); return { items: next };
-  }),
-  clear: () => set(() => { save([]); return { items: [] }; }),
+
+  add: (item) =>
+    set((s) => {
+      const i = s.items.findIndex((x) => x.id === item.id);
+      const next = [...s.items];
+      if (i >= 0) next[i] = { ...next[i], qty: next[i].qty + item.qty };
+      else next.push(item);
+      save(next);
+      return { items: next };
+    }),
+
+  remove: (id) =>
+    set((s) => {
+      const next = s.items.filter((x) => x.id !== id);
+      save(next);
+      return { items: next };
+    }),
+
+  setQty: (id, qty) =>
+    set((s) => {
+      const next = s.items.map((x) => (x.id === id ? { ...x, qty } : x));
+      save(next);
+      return { items: next };
+    }),
+
+  clear: () =>
+    set(() => {
+      save([]);
+      return { items: [] };
+    }),
 }));
